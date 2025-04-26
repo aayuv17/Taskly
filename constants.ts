@@ -7,6 +7,9 @@ export const Styles = {
 	textTransform: {
 		upperCase: "uppercase" as const,
 	},
+	textDecoration: {
+		lineThrough: "line-through" as const,
+	},
 	fullDimension: "100%" as const,
 	flexRow: "row" as const,
 };

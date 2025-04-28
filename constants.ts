@@ -13,3 +13,7 @@ export const Styles = {
 	fullDimension: "100%" as const,
 	flexRow: "row" as const,
 };
+
+export const Storage = {
+	storageKey: "SHOPPING_LIST",
+};

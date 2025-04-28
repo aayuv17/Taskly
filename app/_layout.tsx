@@ -9,7 +9,8 @@ export default function Layout() {
 			<Tabs.Screen
 				name="index"
 				options={{
-					tabBarIcon: ({ color, size }) => {
+					title: "Shopping List",
+					tabBarIcon: ({ size, color }) => {
 						return <Entypo name="list" size={size} color={color} />;
 					},
 				}}
@@ -17,6 +18,7 @@ export default function Layout() {
 			<Tabs.Screen
 				name="counter"
 				options={{
+					title: "Counter",
 					tabBarIcon: ({ color, size }) => {
 						return <AntDesign name="clockcircleo" size={size} color={color} />;
 					},

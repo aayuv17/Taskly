@@ -1,60 +1,83 @@
-import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+	FlatList,
+	LayoutAnimation,
+	StyleSheet,
+	Text,
+	TextInput,
+	View,
+} from "react-native";
 import { themeTokens } from "../theme-tokens";
 import ShoppingListItem from "../components/ShoppingListItem/ShoppingListItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TShoppingListItem } from "../interfaces";
+import { getItemFromStorage, setItemInStorage } from "../utils/storage";
 
 export default function App() {
 	const [value, setValue] = useState("");
 	const [shoppingList, setShoppingList] = useState<TShoppingListItem[]>([]);
 	const [counter, setCounter] = useState(0);
 
+	useEffect(() => {
+		const initialize = async () => {
+			const storedData = await getItemFromStorage();
+			if (storedData) {
+				setShoppingList(storedData);
+			}
+		};
+
+		initialize();
+	}, []);
+
 	const handleSubmit = () => {
 		if (value.length > 0) {
 			const itemId = value + counter;
-			setShoppingList([
+			const updatedShoppingList = [
 				...shoppingList,
 				{
 					itemId: itemId,
 					name: value,
 					isCompleted: false,
 				},
-			]);
+			];
+			LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+			setShoppingList(updatedShoppingList);
 			setValue("");
 			setCounter(counter + 1);
-			sortItems();
+			setItemInStorage(updatedShoppingList);
 		}
 	};
 
 	const handleDelete = (id: string) => {
-		setShoppingList((shoppingList) =>
-			shoppingList.filter((item) => item.itemId !== id),
+		const updatedShoppingList = shoppingList.filter(
+			(item) => item.itemId !== id,
 		);
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		setShoppingList(updatedShoppingList);
+		setItemInStorage(updatedShoppingList);
 	};
 
 	const handleToggle = (id: string) => {
-		setShoppingList((shoppingList) =>
-			shoppingList.map((item) => {
-				return item.itemId === id
-					? {
-							...item,
-							completedAtTimestamp: item.isCompleted ? undefined : Date.now(),
-							isCompleted: !item.isCompleted,
-						}
-					: item;
-			}),
-		);
-		sortItems();
+		const updatedShoppingList = shoppingList.map((item) => {
+			return item.itemId === id
+				? {
+						...item,
+						completedAtTimestamp: item.isCompleted ? undefined : Date.now(),
+						isCompleted: !item.isCompleted,
+					}
+				: item;
+		});
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		setShoppingList(updatedShoppingList);
+		setItemInStorage(updatedShoppingList);
 	};
 
-	const sortItems = () => {
-		setShoppingList((shoppingList) =>
-			shoppingList.sort((a, b) => {
-				const timestampA = a.completedAtTimestamp ?? 0;
-				const timestampB = b.completedAtTimestamp ?? 0;
-				return timestampA - timestampB;
-			}),
-		);
+	const sortItems = (): TShoppingListItem[] => {
+		const sortedShoppingList = shoppingList.sort((a, b) => {
+			const timestampA = a.completedAtTimestamp ?? 0;
+			const timestampB = b.completedAtTimestamp ?? 0;
+			return timestampA - timestampB;
+		});
+		return sortedShoppingList;
 	};
 
 	return (
@@ -75,8 +98,9 @@ export default function App() {
 				returnKeyType="done"
 				onSubmitEditing={handleSubmit}></TextInput>
 			<FlatList
-				data={shoppingList}
+				data={sortItems()}
 				contentContainerStyle={styles.itemList}
+				keyExtractor={(item) => item.itemId}
 				renderItem={({ item }) => (
 					<ShoppingListItem
 						key={item.itemId}
